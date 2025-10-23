@@ -1,0 +1,34 @@
+name: Keep Streamlit App Awake
+
+on:
+  schedule:
+    # 每 20 分鐘執行（注意：GitHub Actions 的 cron 用 UTC）
+    - cron: '*/20 * * * *'
+  workflow_dispatch: {}   # 手動觸發也可以
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: keepalive-muz-01
+      cancel-in-progress: true
+    steps:
+      - name: Ping Streamlit app URLs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # 你可以在這裡列出要預熱的頁面（越少越穩）
+          URLS=(
+            "https://muz-01.streamlit.app/"
+            "https://muz-01.streamlit.app/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d01%E9%8A%85_s1.csv&id=%E4%B8%AD%E9%8A%85000651"
+            # 想多暖幾個頁面就繼續加在這裡
+          )
+
+          for u in "${URLS[@]}"; do
+            # 加上動態參數避免快取
+            full="${u}&keepalive=$(date +%s)"
+            echo "GET $full"
+            curl -sS -L --max-time 25 --retry 2 --retry-delay 2 "$full" >/dev/null || true
+          done
