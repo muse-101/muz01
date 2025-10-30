@@ -1,39 +1,39 @@
-name: Keepalive app2 (3 times/day, fixed 10 pairs)
+name: Keepalive app2 (3 times/day, fixed 10 URLs)
 
 on:
   schedule:
     # 台北 06:12 -> UTC 22:12（前一日）
-    - cron: "12 22 * * *"
+    - cron: '12 22 * * *'
     # 台北 14:18 -> UTC 06:18
-    - cron: "18 6 * * *"
+    - cron: '18 6 * * *'
     # 台北 22:24 -> UTC 14:24
-    - cron: "24 14 * * *"
+    - cron: '24 14 * * *'
   workflow_dispatch:
 
 jobs:
   hit_app2_once:
     runs-on: ubuntu-latest
     steps:
-      - name: Pick one of 10 fixed pairs (pre-encoded URLs) and GET once
+      - name: Curl one random URL from the fixed list
         shell: bash
         run: |
-          cat > /tmp/urls.txt <<'LIST'
-https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d01%E9%8A%85_s1.csv&id=%E4%B8%AD%E9%8A%85000651
-https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d02%E7%8E%89_s1.csv&id=%E6%95%85%E7%8E%89002103
-https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d03%E7%93%B7_s1.csv&id=%E6%95%85%E7%93%B7014204
-https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d04%E7%90%BA_s1.csv&id=%E6%95%85%E7%90%BA000844
-https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d05%E9%9B%9C_s1.csv&id=%E6%95%85%E9%9B%9C001599
-https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d06%E6%96%87_s1.csv&id=%E6%95%85%E6%96%87000071
-https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d20%E7%95%AB_s1.csv&id=%E6%95%85%E7%95%AB00124400014
-https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d21%E6%9B%B8_s1.csv&id=%E6%95%85%E6%9B%B800014100000
-https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d22%E5%B8%96_s1.csv&id=%E6%95%85%E5%B8%9600000100000
-https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d23%E6%89%87_s1.csv&id=%E6%95%85%E6%89%87001592
-LIST
+          URLS=(
+            'https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d01%E9%8A%85_s1.csv&id=%E4%B8%AD%E9%8A%85000651'
+            'https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d02%E7%8E%89_s1.csv&id=%E6%95%85%E7%8E%89002103'
+            'https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d03%E7%93%B7_s1.csv&id=%E6%95%85%E7%93%B7014204'
+            'https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d04%E7%90%BA_s1.csv&id=%E6%95%85%E7%90%BA000844'
+            'https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d05%E9%9B%9C_s1.csv&id=%E6%95%85%E9%9B%9C001599'
+            'https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d06%E6%96%87_s1.csv&id=%E6%95%85%E6%96%87000071'
+            'https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d20%E7%95%AB_s1.csv&id=%E6%95%85%E7%95%AB00124400014'
+            'https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d21%E6%9B%B8_s1.csv&id=%E6%95%85%E6%9B%B800014100000'
+            'https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d22%E5%B8%96_s1.csv&id=%E6%95%85%E5%B8%9600000100000'
+            'https://muz-01.streamlit.app/~/+/?csv=https%3A//raw.githubusercontent.com/muse-101/npm-dataset/main/d23%E6%89%87_s1.csv&id=%E6%95%85%E6%89%87001592'
+          )
 
-          URL=$(shuf -n 1 /tmp/urls.txt)
+          URL="${URLS[$RANDOM % ${#URLS[@]}]}"
           echo "[INFO] GET $URL"
           curl -i -L -s -S -m 25 --retry 2 \
-            -H "User-Agent: Mozilla/5.0" \
-            -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
+            -H 'User-Agent: Mozilla/5.0' \
+            -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
             "$URL" -o /tmp/resp.txt || true
           head -n 1 /tmp/resp.txt || true
